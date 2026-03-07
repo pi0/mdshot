@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { watch } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { createFromPURL, fullName, parsePURL, resolveReadmeUrl } from "regxa";
+import "regxa/registries";
 import { mdshot } from "./index.ts";
 
 // ANSI colors
@@ -40,6 +42,7 @@ ${c.cyan("Input:")}
   ${c.dim("file.md")}          Local markdown file
   ${c.dim("npm:<package>")}    README from npm registry
   ${c.dim("gh:<owner/repo>")}  README from GitHub repo
+  ${c.dim("pkg:<purl>")}       README via regxa (PURL)
 
 ${c.cyan("Options:")}
   ${c.magenta("-w, --watch")}              Watch for file changes
@@ -56,6 +59,13 @@ ${c.cyan("Options:")}
 const width = values.width ? Number(values.width) : undefined;
 const height = values.height ? Number(values.height) : undefined;
 
+function resolvePURLInput(input: string): string | undefined {
+  if (!input.startsWith("pkg:")) {
+    return undefined;
+  }
+  return input;
+}
+
 async function resolveInput(input: string): Promise<{
   markdown: string;
   outputPath: string;
@@ -63,8 +73,8 @@ async function resolveInput(input: string): Promise<{
   defaultTitle?: string;
   defaultDescription?: string;
 }> {
-  if (input === "npm:" || input === "gh:") {
-    throw new Error(`Invalid input: "${input}" — missing package or repo name`);
+  if (input === "npm:" || input === "gh:" || input === "pkg:") {
+    throw new Error(`Invalid input: "${input}" — missing package, repo, or PURL target`);
   }
   const npmMatch = input.match(/^npm:(.+)$/);
   if (npmMatch) {
@@ -109,6 +119,40 @@ async function resolveInput(input: string): Promise<{
       defaultTitle: repo,
       defaultDescription: repoData?.description ?? undefined,
     };
+  }
+  const purl = resolvePURLInput(input);
+  if (purl) {
+    try {
+      const parsed = parsePURL(purl);
+      const [registry, packageName, version] = createFromPURL(purl);
+      const pkg = await registry.fetchPackage(packageName);
+
+      const readmeURL = resolveReadmeUrl(
+        pkg,
+        registry.urls(),
+        version || pkg.latestVersion || undefined,
+      );
+      const readmeRes = await fetch(readmeURL);
+      if (!readmeRes.ok) {
+        throw new Error(`Failed to fetch README: ${readmeRes.status} ${readmeRes.statusText}`);
+      }
+      const markdown = await readmeRes.text();
+
+      if (!markdown.trim()) {
+        throw new Error(`Package "${purl}" has no README content`);
+      }
+
+      const outputPath = resolve(`${purl.replace(/[^a-zA-Z0-9._-]/g, "_")}.png`);
+      return {
+        markdown,
+        outputPath,
+        defaultTitle: `${parsed.type}/${fullName(parsed)}`,
+        defaultDescription: pkg.description || undefined,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to resolve PURL input "${input}": ${message}`);
+    }
   }
   const inputPath = resolve(input);
   const markdown = readFileSync(inputPath, "utf8");

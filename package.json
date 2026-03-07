@@ -26,13 +26,15 @@
     "lint": "oxlint . && oxfmt --check .",
     "prepack": "pnpm build",
     "release": "pnpm test && pnpm build && changelogen --release && npm publish && git push --follow-tags",
-    "test": "pnpm lint && pnpm typecheck",
+    "test": "pnpm lint && pnpm typecheck && pnpm test:e2e",
+    "test:e2e": "node --test ./test/e2e-pkg-input.test.mjs",
     "typecheck": "tsgo --noEmit --skipLibCheck",
     "mdshot": "node --watch ./src/cli.ts"
   },
   "dependencies": {
     "@takumi-rs/core": "^0.70.4",
-    "md4x": "^0.0.18"
+    "md4x": "^0.0.18",
+    "regxa": "^0.1.4"
   },
   "devDependencies": {
     "@types/node": "latest",
