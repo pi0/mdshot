@@ -39,7 +39,7 @@ export const defaultTheme: Theme = {
   lineHeight: 1.6,
   padding: 48,
   width: 1280,
-  height: 640,
+  height: undefined,
   leftBorderWidth: 6,
   leftBorderColor: "#0969da",
 };
