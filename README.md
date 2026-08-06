@@ -31,6 +31,7 @@ Input:
   file.md          Local markdown file
   npm:<package>    README from npm registry
   gh:<owner/repo>  README from GitHub repo
+  pkg:<purl>       README via regxa (PURL)
 
 Options:
   -w, --watch              Watch for file changes
@@ -56,6 +57,9 @@ npx mdshot npm:vue
 
 # From a GitHub repo
 npx mdshot gh:unjs/mdshot
+
+# From regxa via PURL
+npx mdshot pkg:pypi/flask
 
 # Render a specific section
 npx mdshot README.md --select "Installation"

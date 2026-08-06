@@ -32,6 +32,7 @@ mdshot <input> [output.png] [options]
 - `file.md` — Local markdown file
 - `npm:<package>` — README from npm registry (auto-fetches description)
 - `gh:<owner/repo>` — README from GitHub repo (auto-fetches description)
+- `pkg:<purl>` — README via regxa (cross-registry lookup via PURL)
 
 **Options:** `--watch`/`-w`, `--select`/`-s`, `--width`, `--height`, `--title`/`-t`, `--description`/`-d`, `--help`/`-h`
 
@@ -39,6 +40,7 @@ mdshot <input> [output.png] [options]
 
 - `@takumi-rs/core` — Rust-based image renderer (provides `Renderer`, CSS-like layout)
 - `md4x` — Fast markdown-to-AST parser
+- `regxa` — Multi-registry package metadata + README URL resolution via PURL
 
 ## Dev Dependencies & Tooling
 
