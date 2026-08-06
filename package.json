@@ -31,7 +31,7 @@
     "mdshot": "node --watch ./src/cli.ts"
   },
   "dependencies": {
-    "@takumi-rs/core": "^0.70.4",
+    "@takumi-rs/core": "^0.71.5",
     "md4x": "^0.0.18"
   },
   "devDependencies": {
