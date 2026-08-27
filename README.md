@@ -7,7 +7,7 @@
 
 <!-- /automd -->
 
-Render beautiful screenshots from Markdown. Powered by [Takumi](https://github.com/prazdevs/takumi-rs) and [MD4x](https://github.com/unjs/md4x).
+Render beautiful screenshots from Markdown. Powered by [Takumi](https://github.com/kane50613/takumi) and [MD4x](https://github.com/unjs/md4x).
 
 ## Features
 
