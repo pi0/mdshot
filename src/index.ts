@@ -2,10 +2,12 @@ import { Renderer } from "@takumi-rs/core";
 import type { Font, OutputFormat, RenderOptions } from "@takumi-rs/core";
 import { renderToAST } from "md4x";
 import { astToNodes } from "./_ast.ts";
+import type { CodeBlockRenderer } from "./_ast.ts";
 import { loadDefaultFonts } from "./_fonts.ts";
 import { type Theme, baseStyle, defaultTheme, leftBorderStyle, wrapperStyle } from "./_theme.ts";
 
 export type { Theme };
+export type { CodeBlockRenderer };
 export { defaultTheme };
 
 export interface MdshotOptions {
@@ -27,6 +29,8 @@ export interface MdshotOptions {
   title?: string;
   /** Description line shown below the title */
   description?: string;
+  /** Optional custom renderer for code blocks */
+  renderCodeBlock?: CodeBlockRenderer;
 }
 
 let _renderer: Renderer | undefined;
@@ -70,7 +74,7 @@ export async function mdshot(markdown: string, options?: MdshotOptions): Promise
 
   astNodes = insertTitleSeparator(astNodes);
 
-  const children = astToNodes(astNodes, theme);
+  const children = astToNodes(astNodes, theme, options?.renderCodeBlock);
 
   const content = {
     type: "container" as const,

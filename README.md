@@ -85,17 +85,34 @@ const png = await mdshot(markdown, {
 
 **Options:**
 
-| Option             | Type             | Default | Description                                 |
-| ------------------ | ---------------- | ------- | ------------------------------------------- |
-| `width`            | `number`         | `1280`  | Image width in pixels                       |
-| `height`           | `number`         | `640`   | Image height in pixels                      |
-| `format`           | `OutputFormat`   | `"png"` | Output format                               |
-| `devicePixelRatio` | `number`         | `2`     | Device pixel ratio (retina)                 |
-| `theme`            | `Partial<Theme>` | -       | Custom theme overrides                      |
-| `fonts`            | `Font[]`         | -       | Additional fonts to load                    |
-| `select`           | `string`         | -       | Regex pattern to select sections by heading |
-| `title`            | `string`         | -       | Override or add the first heading title     |
-| `description`      | `string`         | -       | Description line shown below the title      |
+| Option             | Type                | Default | Description                                 |
+| ------------------ | ------------------- | ------- | ------------------------------------------- |
+| `width`            | `number`            | `1280`  | Image width in pixels                       |
+| `height`           | `number`            | `640`   | Image height in pixels                      |
+| `format`           | `OutputFormat`      | `"png"` | Output format                               |
+| `devicePixelRatio` | `number`            | `2`     | Device pixel ratio (retina)                 |
+| `theme`            | `Partial<Theme>`    | -       | Custom theme overrides                      |
+| `fonts`            | `Font[]`            | -       | Additional fonts to load                    |
+| `select`           | `string`            | -       | Regex pattern to select sections by heading |
+| `title`            | `string`            | -       | Override or add the first heading title     |
+| `description`      | `string`            | -       | Description line shown below the title      |
+| `renderCodeBlock`  | `CodeBlockRenderer` | -       | Custom code block renderer                  |
+
+`renderCodeBlock` can return a Takumi node or `undefined` to use the default renderer.
+For example, a callback can use `code` and `language` to produce syntax-highlighted nodes:
+
+```js
+const png = await mdshot(markdown, {
+  renderCodeBlock({ code, language, theme }) {
+    if (!language) return;
+    return {
+      type: "text",
+      text: code,
+      style: { color: theme.codeText, fontFamily: theme.monoFamily },
+    };
+  },
+});
+```
 
 ## Development
 

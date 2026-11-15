@@ -18,6 +18,12 @@ interface TText {
 
 type TNode = TContainer | TText;
 
+export type CodeBlockRenderer = (options: {
+  code: string;
+  language: string | undefined;
+  theme: Theme;
+}) => TNode | undefined;
+
 function text(t: string, style?: CSSProperties): TText {
   return { type: "text", text: t, ...(style && { style }) };
 }
@@ -84,7 +90,11 @@ function headingStyle(level: number, theme: Theme): CSSProperties {
   };
 }
 
-export function astToNodes(nodes: MdNode[], theme: Theme): TNode[] {
+export function astToNodes(
+  nodes: MdNode[],
+  theme: Theme,
+  renderCodeBlock?: CodeBlockRenderer,
+): TNode[] {
   const result: TNode[] = [];
 
   for (const node of nodes) {
@@ -137,6 +147,11 @@ export function astToNodes(nodes: MdNode[], theme: Theme): TNode[] {
     // Code block
     if (tag === "pre") {
       const codeContent = extractText(children);
+      const customNode = renderCodeBlock?.({ code: codeContent, language: _attrs.language, theme });
+      if (customNode) {
+        result.push(customNode);
+        continue;
+      }
       result.push(
         container(
           {
@@ -162,7 +177,7 @@ export function astToNodes(nodes: MdNode[], theme: Theme): TNode[] {
 
     // Blockquote
     if (tag === "blockquote") {
-      const inner = astToNodes(children, theme);
+      const inner = astToNodes(children, theme, renderCodeBlock);
       result.push(
         container(
           {
@@ -247,7 +262,7 @@ export function astToNodes(nodes: MdNode[], theme: Theme): TNode[] {
     if (tag === "img") continue;
 
     // Fallback: recurse into block-level elements
-    result.push(...astToNodes(children, theme));
+    result.push(...astToNodes(children, theme, renderCodeBlock));
   }
 
   return result;
