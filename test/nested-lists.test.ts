@@ -1,0 +1,30 @@
+import { strict as assert } from "node:assert";
+import { test } from "node:test";
+import { renderToAST } from "md4x";
+import { astToNodes } from "../src/_ast.ts";
+import { defaultTheme } from "../src/_theme.ts";
+
+test("nested lists retain their markers, hierarchy, and order", () => {
+  const markdown = "- parent\n  1. first\n  2. second\n     - grandchild\n- sibling";
+  const { nodes } = JSON.parse(renderToAST(markdown));
+  const [list] = astToNodes(nodes, defaultTheme);
+  assert.ok(list && list.type === "container");
+  const [parent, sibling] = list.children!;
+  assert.ok(parent && parent.type === "container");
+  assert.ok(sibling && sibling.type === "container");
+  const [parentLine, nested] = parent.children!;
+  assert.ok(parentLine && parentLine.type === "container");
+  assert.ok(nested && nested.type === "container");
+  assert.equal(parentLine.children![0]!.type === "text" && parentLine.children![0]!.text, "• ");
+  assert.equal(parentLine.children![1]!.type === "text" && parentLine.children![1]!.text, "parent");
+  const ordered = nested.children![0]!;
+  assert.ok(ordered.type === "container");
+  const [first, second] = ordered.children!;
+  assert.ok(first && first.type === "container");
+  assert.ok(second && second.type === "container");
+  assert.equal(first.children![0]!.type === "text" && first.children![0]!.text, "1. ");
+  const secondLine = second.children![0]!;
+  assert.ok(secondLine.type === "container");
+  assert.equal(secondLine.children![0]!.type === "text" && secondLine.children![0]!.text, "2. ");
+  assert.equal(sibling.children![1]!.type === "text" && sibling.children![1]!.text, "sibling");
+});

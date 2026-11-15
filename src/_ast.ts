@@ -261,6 +261,42 @@ function listItem(
 ): TContainer {
   const [, , ...children] = li;
   const marker = mode === "bullet" ? "\u2022 " : `${index}. `;
+  const hasNestedList = children.some(
+    (child) => Array.isArray(child) && (child[0] === "ul" || child[0] === "ol"),
+  );
+  if (hasNestedList) {
+    const result: TNode[] = [];
+    let inlineNodes: MdNode[] = [];
+    let first = true;
+    const flush = () => {
+      if (!inlineNodes.length && !first) return;
+      result.push(
+        container({ display: "flex", flexWrap: "wrap", whiteSpace: "pre-wrap" }, [
+          ...(first ? [text(marker, { color: theme.muted })] : []),
+          ...inlineChildren(inlineNodes, theme, { color: theme.text }),
+        ]),
+      );
+      inlineNodes = [];
+      first = false;
+    };
+    for (const child of children) {
+      if (Array.isArray(child) && (child[0] === "ul" || child[0] === "ol")) {
+        flush();
+        result.push(
+          container(
+            { display: "flex", flexDirection: "column", paddingLeft: 16 },
+            astToNodes([child], theme),
+          ),
+        );
+      } else if (Array.isArray(child) && child[0] === "p") {
+        inlineNodes.push(...(child.slice(2) as MdNode[]));
+      } else {
+        inlineNodes.push(child);
+      }
+    }
+    flush();
+    return container({ display: "flex", flexDirection: "column", gap: 6 }, result);
+  }
   const inline = inlineChildren(
     children.flatMap((c) =>
       typeof c === "string" ? [c] : c[0] === "p" ? (c.slice(2) as MdNode[]) : [c],
